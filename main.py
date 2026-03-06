@@ -13,7 +13,7 @@ async def lifespan(app: FastAPI):
     run_sql(
         """
         CREATE TABLE IF NOT EXISTS users (
-            id_users            SERIAL PRIMARY KEY,
+            id_users            INTEGER PRIMARY KEY AUTOINCREMENT,
             password_users      VARCHAR(255) NOT NULL,
             name_users          VARCHAR(255) NOT NULL,
             email_users         VARCHAR(255) NOT NULL
@@ -46,7 +46,7 @@ class User(BaseModel):
     email_users: str
 
 #Rota que excuta método GET
-@router.get("/")
+@router.get("/users")
 def get_users():
     #Executa uma query que busca todos os usuários da tabela users
     return run_sql("SELECT * FROM users")
@@ -65,6 +65,24 @@ def create_users(body: User):
             VALUES('{password_users}', '{name_users}', '{email_users}')
         """
     )
+
+@router.get("/users/{id}")
+def read_user(id: int):
+
+    return run_sql(f"SELECT * FROM users WHERE id_users={id}")
+
+@router.put("/users/{id}")
+def upate_user(id: int, body: User):
+    password_users, name_users, email_users = body.password_users, body.name_users, body.email_users
+
+    return run_sql(
+        f"UPDATE users SET password_users = '{password_users}', name_users = '{name_users}', email_users = '{email_users}' WHERE id = {id}"
+    )
+
+@router.delete("/users/{name_users}")
+def delete_users(name_users):
+
+    return f"DELETE FROM users WHERE name_users = {name_users}"
 
 #Registra as rotas dentro do app
 app.include_router(router=router)
